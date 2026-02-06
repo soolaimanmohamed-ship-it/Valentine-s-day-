@@ -1,170 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>Cute Savage Valentine 💘</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body{
-  font-family: Arial, sans-serif;
-  background:#ffe6f0;
-  text-align:center;
-  padding:20px;
-}
-.card{
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  max-width:420px;
-  margin:20px auto;
-  box-shadow:0 8px 20px rgba(0,0,0,.1);
-}
-input,select,button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  font-size:16px;
-}
-button{
-  background:#ff4081;
-  color:#fff;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
-.hidden{display:none;}
-</style>
 </head>
-
 <body>
 
-<!-- ================= SENDER ================= -->
-<div class="card" id="senderBox">
-  <h2>Send Valentine 💘</h2>
+<h2>💘 Cute Savage Valentine</h2>
 
-  <input id="fromName" placeholder="Your Name">
-  <input id="toName" placeholder="Their Name">
+<input id="from" placeholder="Your Name">
+<input id="to" placeholder="Their Name">
 
-  <select id="category">
-    <option value="">Choose Category</option>
-    <option value="friend">Friend 😎</option>
-    <option value="crush">Crush 😳</option>
-    <option value="lover">Lover 💘</option>
-    <option value="family">Family 🤍</option>
-    <option value="ex">Ex 😌</option>
-  </select>
+<select id="type">
+  <option value="">Choose</option>
+  <option value="crush">Crush</option>
+  <option value="friend">Friend</option>
+  <option value="lover">Lover</option>
+</select>
 
-  <button onclick="sendValentine()">Send Valentine</button>
+<button onclick="sendValentine()">Send 💌</button>
+
+<p id="result"></p>
+
+<hr>
+
+<div id="receiver" style="display:none">
+  <h3>Your Valentine 💖</h3>
+  <p id="msg"></p>
+  <p id="names"></p>
 </div>
 
-<!-- ================= LINK GENERATED ================= -->
-<div class="card hidden" id="linkBox">
-  <h3>Link Generated ✅</h3>
-  <p>Only the receiver will see the message 😏</p>
-  <input id="shareLink" readonly>
-  <button onclick="copyLink()">Copy Link 🔗</button>
-</div>
-
-<!-- ================= RECEIVER ================= -->
-<div class="card hidden" id="receiverBox">
-  <h2>Your Valentine 💖</h2>
-  <p id="finalMessage" style="font-size:18px;"></p>
-  <p id="finalNames" style="margin-top:10px;"></p>
-</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* ===== BASE URL (your GitHub Pages URL) ===== */
-const BASE_URL = "https://soolaimanmohamed-ship-it.github.io/Valentine-s-day/";
+/* Firebase */
+firebase.initializeApp({
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID"
+});
+const db = firebase.firestore();
 
-/* ===== Messages ===== */
+/* Messages */
 const messages = {
-  friend: [
-    "Best friends forever 😎",
-    "Chaos but loyal 😂",
-    "Friendship > everything 🔥",
-    "You’re my safe place 🤍",
-    "Chosen family vibes 😌"
-  ],
-  crush: [
-    "Low-key obsessed 😏",
-    "This took courage 😳",
-    "Not flirting… maybe 👀",
-    "Rent-free in my head 😌",
-    "Hope this made you smile 😊"
-  ],
-  lover: [
-    "Always you 💘",
-    "You’re my home 🏠",
-    "Still choosing you 😌",
-    "Soft love, strong bond 💞",
-    "My peace in human form 🤍"
-  ],
-  family: [
-    "Family is everything 🤍",
-    "Forever grateful for you 🙏",
-    "Home is you 🏡",
-    "Love without conditions 🫂",
-    "My strength always 💪"
-  ],
-  ex: [
-    "No hate, just growth 😌",
-    "Lesson learned 💭",
-    "Chapter closed 📕",
-    "Wishing you peace ✨",
-    "We both evolved 🔥"
-  ]
+  crush: ["Low-key obsessed 😏","This took courage 😳"],
+  friend:["Bestie energy 😎","Chaos but loyal 😂"],
+  lover:["Always you 💘","You’re home 🏠"]
 };
 
-/* ===== Sender Logic ===== */
-function sendValentine(){
-  const from = document.getElementById("fromName").value.trim();
-  const to = document.getElementById("toName").value.trim();
-  const cat = document.getElementById("category").value;
+/* Sender */
+async function sendValentine(){
+  const f = from.value.trim();
+  const t = to.value.trim();
+  const tp = type.value;
+  if(!f||!t||!tp) return alert("Fill all");
 
-  if(!from || !to || !cat){
-    alert("Please fill all fields");
-    return;
-  }
+  const msg = messages[tp][Math.floor(Math.random()*messages[tp].length)];
 
-  const list = messages[cat];
-  const msg = list[Math.floor(Math.random() * list.length)];
+  const doc = await db.collection("valentines").add({
+    from:f,to:t,msg,created:Date.now()
+  });
 
-  const payload = encodeURIComponent(
-    JSON.stringify({ from: from, to: to, msg: msg })
-  );
-
-  const link = BASE_URL + "?v=" + payload;
-
-  document.getElementById("senderBox").classList.add("hidden");
-  document.getElementById("linkBox").classList.remove("hidden");
-  document.getElementById("shareLink").value = link;
+  const link = location.origin + location.pathname + "?id=" + doc.id;
+  result.innerText = "Share this link:\n" + link;
 }
 
-function copyLink(){
-  const input = document.getElementById("shareLink");
-  input.select();
-  document.execCommand("copy");
-  alert("Link copied 👍");
-}
-
-/* ===== Receiver Logic ===== */
-const params = new URLSearchParams(window.location.search);
-if(params.has("v")){
-  try{
-    const data = JSON.parse(decodeURIComponent(params.get("v")));
-
-    document.getElementById("senderBox").classList.add("hidden");
-    document.getElementById("linkBox").classList.add("hidden");
-    document.getElementById("receiverBox").classList.remove("hidden");
-
-    document.getElementById("finalMessage").innerText = data.msg;
-    document.getElementById("finalNames").innerText =
-      "From: " + data.from + " → To: " + data.to;
-
-  }catch(e){
-    alert("Invalid Valentine link");
-  }
+/* Receiver */
+const id = new URLSearchParams(location.search).get("id");
+if(id){
+  db.collection("valentines").doc(id).get().then(d=>{
+    if(!d.exists) return;
+    receiver.style.display="block";
+    msg.innerText = d.data().msg;
+    names.innerText = "From: "+d.data().from+" → To: "+d.data().to;
+  });
 }
 </script>
 
