@@ -14,6 +14,7 @@ button{background:#ff4081;color:#fff;border:none;font-weight:bold}
 
 <body>
 
+<!-- SENDER -->
 <div class="box" id="sender">
 <h2>Send Valentine 💘</h2>
 
@@ -30,12 +31,14 @@ button{background:#ff4081;color:#fff;border:none;font-weight:bold}
 <button onclick="send()">Send</button>
 </div>
 
+<!-- LINK -->
 <div class="box" id="result" style="display:none">
 <h3>Link Generated ✅</h3>
 <input id="shareLink" readonly>
 <button onclick="copyLink()">Copy Link</button>
 </div>
 
+<!-- RECEIVER -->
 <div class="box" id="receiver" style="display:none">
 <h2>Your Valentine 💖</h2>
 <p id="message"></p>
@@ -62,9 +65,10 @@ function send(){
   }
 
   const msg = messages[rel][Math.floor(Math.random()*messages[rel].length)];
-  const data = btoa(JSON.stringify({from,to,msg}));
 
-  const link = BASE_URL + "?v=" + data;
+  // ✅ Unicode-safe encoding
+  const payload = encodeURIComponent(JSON.stringify({from,to,msg}));
+  const link = BASE_URL + "?v=" + payload;
 
   document.getElementById("sender").style.display="none";
   document.getElementById("result").style.display="block";
@@ -78,16 +82,23 @@ function copyLink(){
   alert("Copied 👍");
 }
 
+// ✅ Receiver logic
 const params = new URLSearchParams(window.location.search);
 if(params.get("v")){
-  const d = JSON.parse(atob(params.get("v")));
-  document.getElementById("sender").style.display="none";
-  document.getElementById("result").style.display="none";
-  document.getElementById("receiver").style.display="block";
+  try{
+    const data = JSON.parse(decodeURIComponent(params.get("v")));
 
-  document.getElementById("message").innerText = d.msg;
-  document.getElementById("names").innerText =
-    "From: " + d.from + " → To: " + d.to;
+    document.getElementById("sender").style.display="none";
+    document.getElementById("result").style.display="none";
+    document.getElementById("receiver").style.display="block";
+
+    document.getElementById("message").innerText = data.msg;
+    document.getElementById("names").innerText =
+      "From: " + data.from + " → To: " + data.to;
+
+  }catch(e){
+    alert("Invalid or broken link");
+  }
 }
 </script>
 
