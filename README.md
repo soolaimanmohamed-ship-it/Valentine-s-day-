@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -11,7 +12,7 @@ body{
   text-align:center;
   padding:20px;
 }
-.box{
+.card{
   background:#fff;
   padding:20px;
   border-radius:12px;
@@ -38,8 +39,8 @@ button{
 
 <body>
 
-<!-- ========== SENDER VIEW ========== -->
-<div class="box" id="senderBox">
+<!-- ================= SENDER ================= -->
+<div class="card" id="senderBox">
   <h2>Send Valentine 💘</h2>
 
   <input id="fromName" placeholder="Your Name">
@@ -57,22 +58,23 @@ button{
   <button onclick="sendValentine()">Send Valentine</button>
 </div>
 
-<!-- ========== LINK GENERATED ========== -->
-<div class="box hidden" id="linkBox">
+<!-- ================= LINK GENERATED ================= -->
+<div class="card hidden" id="linkBox">
   <h3>Link Generated ✅</h3>
-  <p>Only the receiver will know the message 😏</p>
+  <p>Only the receiver will see the message 😏</p>
   <input id="shareLink" readonly>
   <button onclick="copyLink()">Copy Link 🔗</button>
 </div>
 
-<!-- ========== RECEIVER VIEW ========== -->
-<div class="box hidden" id="receiverBox">
+<!-- ================= RECEIVER ================= -->
+<div class="card hidden" id="receiverBox">
   <h2>Your Valentine 💖</h2>
   <p id="finalMessage" style="font-size:18px;"></p>
   <p id="finalNames" style="margin-top:10px;"></p>
 </div>
 
 <script>
+/* ===== BASE URL (your GitHub Pages URL) ===== */
 const BASE_URL = "https://soolaimanmohamed-ship-it.github.io/Valentine-s-day/";
 
 /* ===== Messages ===== */
@@ -80,8 +82,8 @@ const messages = {
   friend: [
     "Best friends forever 😎",
     "Chaos but loyal 😂",
-    "You’re my safe place 🤍",
     "Friendship > everything 🔥",
+    "You’re my safe place 🤍",
     "Chosen family vibes 😌"
   ],
   crush: [
@@ -114,7 +116,7 @@ const messages = {
   ]
 };
 
-/* ===== Sender logic ===== */
+/* ===== Sender Logic ===== */
 function sendValentine(){
   const from = document.getElementById("fromName").value.trim();
   const to = document.getElementById("toName").value.trim();
@@ -125,15 +127,12 @@ function sendValentine(){
     return;
   }
 
-  const msgList = messages[cat];
-  const msg = msgList[Math.floor(Math.random()*msgList.length)];
+  const list = messages[cat];
+  const msg = list[Math.floor(Math.random() * list.length)];
 
-  // Unicode-safe encoding
-  const payload = encodeURIComponent(JSON.stringify({
-    from: from,
-    to: to,
-    msg: msg
-  }));
+  const payload = encodeURIComponent(
+    JSON.stringify({ from: from, to: to, msg: msg })
+  );
 
   const link = BASE_URL + "?v=" + payload;
 
@@ -143,15 +142,15 @@ function sendValentine(){
 }
 
 function copyLink(){
-  const l = document.getElementById("shareLink");
-  l.select();
+  const input = document.getElementById("shareLink");
+  input.select();
   document.execCommand("copy");
   alert("Link copied 👍");
 }
 
-/* ===== Receiver logic ===== */
+/* ===== Receiver Logic ===== */
 const params = new URLSearchParams(window.location.search);
-if(params.get("v")){
+if(params.has("v")){
   try{
     const data = JSON.parse(decodeURIComponent(params.get("v")));
 
@@ -163,8 +162,8 @@ if(params.get("v")){
     document.getElementById("finalNames").innerText =
       "From: " + data.from + " → To: " + data.to;
 
-  }catch(err){
-    alert("Invalid or broken Valentine link");
+  }catch(e){
+    alert("Invalid Valentine link");
   }
 }
 </script>
